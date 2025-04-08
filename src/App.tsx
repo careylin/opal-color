@@ -1,34 +1,40 @@
+import { Heading, Theme } from '@radix-ui/themes';
+import '@radix-ui/themes/styles.css';
+import ColorConverter from './components/ColorConverter';
+import ColorOutput from './components/ColorOutput';
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [rgbValue, setRgbValue] = useState<string | null>(null);
+  const [rgbaValue, setRgbaValue] = useState<string | null>(null);
+  const [rgbFloatValue, setRgbFloatValue] = useState<string | null>(null);
+  const [hexValue, setHexValue] = useState<string>('');
+
+  const handleColorConvert = (rgb: string, rgba: string, rgbFloat: string, hex: string) => {
+    setRgbValue(rgb);
+    setRgbaValue(rgba);
+    setRgbFloatValue(rgbFloat);
+    setHexValue(hex);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Theme>
+      <Heading as="h1" align="left" size="7">Color converter</Heading>
+      <div className="layout-container">
+        <div className="input-section">
+          <ColorConverter onConvert={handleColorConvert} />
+        </div>
+        <div className="output-section">
+          <ColorOutput 
+            rgbValue={rgbValue} 
+            rgbaValue={rgbaValue} 
+            rgbFloatValue={rgbFloatValue}
+            hexValue={hexValue} 
+          />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </Theme>
   )
 }
 
