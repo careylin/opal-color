@@ -19,8 +19,8 @@ function App() {
   };
 
   return (
-    <Theme>
-      <Heading as="h1" align="left" size="7">Color converter</Heading>
+    <Theme accentColor="green" grayColor="mauve">
+      <Heading as="h1" align="left" size="8" weight="medium">Color converter</Heading>
       <div className="layout-container">
         <div className="input-section">
           <ColorConverter onConvert={handleColorConvert} />

@@ -4,6 +4,21 @@
   padding: 2rem;
   text-align: center;
   width: 100%;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.radix-themes {
+  --default-font-family: 'Geist';
+  --heading-font-family: var(--default-font-family);
+  --code-font-family: 'Geist Mono';
+  --strong-font-family: var(--default-font-family);
+  --em-font-family: var(--default-font-family);
+  --quote-font-family: var(--default-font-family);
+  --font-size-8: 36px;
+  --heading-letter-spacing: -0.02em;
 }
 
 .layout-container {
