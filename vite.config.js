@@ -14,7 +14,7 @@ export default defineConfig({
         }
     },
     assetsInclude: ['**/*.woff2'],
-    base: '/float-to-hex/',
+    base: './',
     build: {
         outDir: 'docs'
     }
