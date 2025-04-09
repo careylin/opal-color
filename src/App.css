@@ -16,6 +16,7 @@
   padding: 2rem;
   text-align: center;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .radix-themes {
@@ -90,6 +91,30 @@ body{
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  #root {
+    padding: 2rem;
+  }
+  
+  .layout-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .input-section {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+  
+  .output-section {
+    max-width: 100%;
+    width: 100%;
+    min-height: 400px;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
