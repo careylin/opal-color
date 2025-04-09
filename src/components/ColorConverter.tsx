@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { TextField, Button, Text, Card, Flex, Tabs } from '@radix-ui/themes';
 import styles from './ColorConverter.module.css';
+import { rgbToHSL, rgbFloatToHSL } from '../utils/colorUtils';
 
 interface ColorConverterProps {
-  onConvert: (rgba: string, rgbFloat: string, hex: string) => void;
+  onConvert: (rgba: string, rgbFloat: string, hex: string, hsl: string) => void;
 }
 
 const ColorConverter = ({ onConvert }: ColorConverterProps) => {
@@ -46,9 +47,13 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const gFloat = (g / 255).toFixed(12);
     const bFloat = (b / 255).toFixed(12);
 
+    // Calculate HSL values
+    const hsl = rgbToHSL(r, g, b);
+    const hslValue = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
     const rgbaValue = `rgba(${r}, ${g}, ${b}, 1)`;
     const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, 1)`;
-    onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`);
+    onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`, hslValue);
   };
 
   // Parse RGB Float input in various formats
@@ -115,9 +120,13 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const hexB = rgbB.toString(16).padStart(2, '0');
     const hexValue = `#${hexR}${hexG}${hexB}`;
 
+    // Calculate HSL values
+    const hsl = rgbFloatToHSL(r, g, b);
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`;
+
     const rgbaValue = `rgba(${rgbR}, ${rgbG}, ${rgbB}, ${a})`;
     const rgbFloatValue = `rgba(${r.toFixed(12)}, ${g.toFixed(12)}, ${b.toFixed(12)}, ${a.toFixed(12)})`;
-    onConvert(rgbaValue, rgbFloatValue, hexValue);
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
   };
 
   // Parse RGB input in various formats
@@ -184,9 +193,13 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const gFloat = (g / 255).toFixed(12);
     const bFloat = (b / 255).toFixed(12);
 
+    // Calculate HSL values
+    const hsl = rgbToHSL(r, g, b);
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`;
+
     const rgbaValue = `rgba(${r}, ${g}, ${b}, ${a})`;
     const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${a.toFixed(12)})`;
-    onConvert(rgbaValue, rgbFloatValue, hexValue);
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
   };
 
   return (

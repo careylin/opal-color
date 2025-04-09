@@ -5,21 +5,17 @@ import ColorOutput from './components/ColorOutput';
 import { useState } from 'react'
 import './App.css'
 
-// Extract alpha value from RGBA string
-const extractAlpha = (rgbaString: string): number => {
-  const match = rgbaString.match(/rgba?\([^)]+,\s*([\d.]+)\)/);
-  return match ? parseFloat(match[1]) : 1;
-};
-
 function App() {
   const [rgbaValue, setRgbaValue] = useState<string | null>(null);
   const [rgbFloatValue, setRgbFloatValue] = useState<string | null>(null);
   const [hexValue, setHexValue] = useState<string>('');
+  const [hslValue, setHslValue] = useState<string | null>(null);
 
-  const handleColorConvert = (rgba: string, rgbFloat: string, hex: string) => {
+  const handleColorConvert = (rgba: string, rgbFloat: string, hex: string, hsl: string) => {
     setRgbaValue(rgba);
     setRgbFloatValue(rgbFloat);
     setHexValue(hex);
+    setHslValue(hsl);
   };
 
   return (
@@ -36,7 +32,8 @@ function App() {
           <ColorOutput 
             rgbaValue={rgbaValue} 
             rgbFloatValue={rgbFloatValue}
-            hexValue={hexValue} 
+            hexValue={hexValue}
+            hslValue={hslValue}
           />
         </div>
       </div>

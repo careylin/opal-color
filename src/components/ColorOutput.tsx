@@ -1,92 +1,75 @@
 import { Card, Text, Flex } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import styles from './ColorOutput.module.css';
+import { 
+  extractAlpha, 
+  calculateBrightness, 
+  formatRgbFloat, 
+  getHexWithAlpha,
+  hexToHSL,
+  formatHSL
+} from '../utils/colorUtils';
+import CopyableText from './CopyableText';
 
 interface ColorOutputProps {
   rgbaValue: string | null;
   rgbFloatValue: string | null;
   hexValue: string;
+  hslValue?: string | null;
 }
 
-// Calculate brightness based on W3C algorithm
-const calculateBrightness = (hexColor: string): number => {
-  // Remove # if present
-  const cleanHex = hexColor.replace('#', '');
-  
-  // Convert hex to RGB
-  const r = parseInt(cleanHex.substring(0, 2), 16);
-  const g = parseInt(cleanHex.substring(2, 4), 16);
-  const b = parseInt(cleanHex.substring(4, 6), 16);
-  
-  // Calculate brightness using W3C algorithm
-  return Math.round(((r * 299) + (g * 587) + (b * 114)) / 1000);
-};
-
-const formatRgbFloat = (rgbFloat: string): string => {
-  // Extract the numbers from the rgb() or rgba() format
-  const matches = rgbFloat.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
-  if (!matches) return rgbFloat;
-  
-  const [, r, g, b, a = "1"] = matches;
-  return `rgba(${Number(r).toFixed(4)}, ${Number(g).toFixed(4)}, ${Number(b).toFixed(4)}, ${Number(a).toFixed(4)})`;
-};
-
-// Extract alpha value from RGBA string
-const extractAlpha = (rgbaString: string): number => {
-  const match = rgbaString.match(/rgba?\([^)]+,\s*([\d.]+)\)/);
-  return match ? parseFloat(match[1]) : 1;
-};
-
-// Convert alpha value to hex
-const alphaToHex = (alpha: number): string => {
-  if (alpha === 1) return '';
-  const hexAlpha = Math.round(alpha * 255).toString(16).padStart(2, '0');
-  return hexAlpha;
-};
-
-// Get hex with alpha if present
-const getHexWithAlpha = (hexValue: string, alpha: number): { hex6: string, hex8: string | null } => {
-  const cleanHex = hexValue.replace('#', '');
-  const hex6 = `#${cleanHex}`;
-  
-  if (alpha === 1) {
-    return { hex6, hex8: null };
-  }
-  
-  const hexAlpha = alphaToHex(alpha);
-  const hex8 = `#${cleanHex}${hexAlpha}`;
-  
-  return { hex6, hex8 };
-};
-
-const ColorOutput = ({ rgbaValue, rgbFloatValue, hexValue }: ColorOutputProps) => {
+const ColorOutput = ({ rgbaValue, rgbFloatValue, hexValue, hslValue }: ColorOutputProps) => {
   if (!rgbaValue || !rgbFloatValue) return null;
 
-  const formattedRgbFloat = formatRgbFloat(rgbFloatValue);
-  const brightness = calculateBrightness(hexValue);
-  const isDark = brightness < 128;
-  const alpha = extractAlpha(rgbaValue);
-  const { hex6, hex8 } = getHexWithAlpha(hexValue, alpha);
+  // Memoize all calculations to prevent unnecessary recalculations
+  const formattedRgbFloat = useMemo(() => 
+    formatRgbFloat(rgbFloatValue), 
+    [rgbFloatValue]
+  );
+
+  const brightness = useMemo(() => 
+    calculateBrightness(hexValue), 
+    [hexValue]
+  );
+
+  const isDark = useMemo(() => 
+    brightness < 128, 
+    [brightness]
+  );
+
+  const alpha = useMemo(() => 
+    extractAlpha(rgbaValue), 
+    [rgbaValue]
+  );
+
+  const { hex6, hex8 } = useMemo(() => 
+    getHexWithAlpha(hexValue, alpha), 
+    [hexValue, alpha]
+  );
+  
+  // Calculate HSL values if not provided
+  const calculatedHsl = useMemo(() => 
+    hexToHSL(hexValue), 
+    [hexValue]
+  );
+  
+  const calculatedHslValue = useMemo(() => 
+    formatHSL(calculatedHsl.h, calculatedHsl.s, calculatedHsl.l, alpha), 
+    [calculatedHsl, alpha]
+  );
+  
+  // Use provided HSL value or calculated one
+  const displayHslValue = hslValue || calculatedHslValue;
   
   const labelClass = isDark ? styles['label-dark'] : styles['label-light'];
   const valueClass = isDark ? styles['value-dark'] : styles['value-light'];
+  
+  // State to track if the alpha part is being hovered
+  const [isAlphaHovered, setIsAlphaHovered] = useState(false);
 
-  // State for tracking which value was copied
-  const [copiedValue, setCopiedValue] = useState<string | null>(null);
-
-  // Function to handle copying to clipboard
-  const handleCopy = (value: string, type: string) => {
-    navigator.clipboard.writeText(value)
-      .then(() => {
-        setCopiedValue(type);
-        // Reset the copied state after 2 seconds
-        setTimeout(() => {
-          setCopiedValue(null);
-        }, 2000);
-      })
-      .catch(err => {
-        console.error('Failed to copy text: ', err);
-      });
+  // Handle group hover for hex parts
+  const handleHexGroupHover = (isHovering: boolean) => {
+    setIsAlphaHovered(isHovering);
   };
 
   return (
@@ -98,77 +81,64 @@ const ColorOutput = ({ rgbaValue, rgbFloatValue, hexValue }: ColorOutputProps) =
               <Text size="2" className={labelClass}>Hex</Text>
               <Flex direction="row" gap="2" align="center">
                 <Flex direction="row" align="center">
-                  <Text 
-                    className={valueClass} 
-                    size="7" 
-                    weight="medium" 
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => handleCopy(hex6, 'hex')}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                  >
-                    {hex6}
-                  </Text>
+                  <CopyableText 
+                    text={hex6}
+                    className={valueClass}
+                    size="7"
+                    weight="medium"
+                    groupId="hex-group"
+                    onGroupHover={handleHexGroupHover}
+                    style={{ opacity: isAlphaHovered ? '0.7' : '1' }}
+                  />
                   {hex8 && (
-                    <Text 
-                      className={valueClass} 
-                      size="7" 
-                      weight="medium" 
-                      style={{ cursor: 'pointer', marginLeft: '4px' }}
-                      onClick={() => handleCopy(hex8, 'hex8')}
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                    >
-                      {hex8.substring(7)}
-                    </Text>
+                    <CopyableText 
+                      text={hex8.substring(7)}
+                      className={valueClass}
+                      size="7"
+                      weight="medium"
+                      style={{ marginLeft: '4px' }}
+                      groupId="hex-group"
+                      onGroupHover={handleHexGroupHover}
+                    />
                   )}
                 </Flex>
-                {copiedValue && (copiedValue === 'hex' || copiedValue === 'hex8') && (
-                  <Text size="1" color="green">Copied</Text>
-                )}
               </Flex>
             </Flex>
             <Flex direction="column" gap="1" justify="start">
               <Text size="2" className={labelClass}>RGBA</Text>
               <Flex direction="row" gap="2" align="center">
-                <Text 
-                  className={valueClass} 
-                  size="7" 
+                <CopyableText 
+                  text={rgbaValue}
+                  className={valueClass}
+                  size="7"
                   weight="medium"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleCopy(rgbaValue, 'rgba')}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  {rgbaValue}
-                </Text>
-                {copiedValue === 'rgba' && (
-                  <Text size="1" color="green">Copied</Text>
-                )}
+                />
               </Flex>
             </Flex>
             <Flex direction="column" gap="1" justify="start">
               <Text size="2" className={labelClass}>RGB Float</Text>
               <Flex direction="row" gap="2" align="center">
-                <Text 
-                  className={valueClass} 
-                  size="7" 
+                <CopyableText 
+                  text={formattedRgbFloat}
+                  className={valueClass}
+                  size="7"
                   weight="medium"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleCopy(formattedRgbFloat, 'float')}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  {formattedRgbFloat}
-                </Text>
-                {copiedValue === 'float' && (
-                  <Text size="1" color="green">Copied</Text>
-                )}
+                />
+              </Flex>
+            </Flex>
+            <Flex direction="column" gap="1" justify="start">
+              <Text size="2" className={labelClass}>HSL</Text>
+              <Flex direction="row" gap="2" align="center">
+                <CopyableText 
+                  text={displayHslValue}
+                  className={valueClass}
+                  size="7"
+                  weight="medium"
+                />
               </Flex>
             </Flex>
           </Flex>
         </div>
-        {/* <div className={styles.colorPreview} style={{ backgroundColor: hexValue }} /> */}
       </Flex>
     </Card>
   );
