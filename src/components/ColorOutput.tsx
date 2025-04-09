@@ -47,7 +47,7 @@ const ColorOutput = ({
     [rgbaValue]
   );
 
-  const { hex6, hex8 } = useMemo(() => 
+  const { hex8 } = useMemo(() => 
     hexValue ? getHexWithAlpha(hexValue, alpha) : { hex6: DEFAULT_COLOR, hex8: null }, 
     [hexValue, alpha]
   );
