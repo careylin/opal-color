@@ -16,5 +16,5 @@ export default defineConfig({
     }
   },
   assetsInclude: ['**/*.woff2'],
-  base: '/'
+  base: '/float-to-hex/'
 })
