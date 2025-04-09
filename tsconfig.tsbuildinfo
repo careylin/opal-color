@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/colorconverter.tsx","./src/components/coloroutput.tsx","./src/components/copyabletext.tsx","./src/hooks/useclipboard.ts","./src/utils/colorutils.ts"],"version":"5.7.3"}

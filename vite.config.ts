@@ -15,5 +15,6 @@ export default defineConfig({
       '@': resolve(__dirname, './src')
     }
   },
-  assetsInclude: ['**/*.woff2']
+  assetsInclude: ['**/*.woff2'],
+  base: '/'
 })
