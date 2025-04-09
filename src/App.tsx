@@ -5,6 +5,12 @@ import ColorOutput from './components/ColorOutput';
 import { useState } from 'react'
 import './App.css'
 
+// Extract alpha value from RGBA string
+const extractAlpha = (rgbaString: string): number => {
+  const match = rgbaString.match(/rgba?\([^)]+,\s*([\d.]+)\)/);
+  return match ? parseFloat(match[1]) : 1;
+};
+
 function App() {
   const [rgbaValue, setRgbaValue] = useState<string | null>(null);
   const [rgbFloatValue, setRgbFloatValue] = useState<string | null>(null);
@@ -17,7 +23,7 @@ function App() {
   };
 
   return (
-    <Theme accentColor="green" grayColor="mauve">
+    <Theme accentColor="gray" grayColor="sage">
       <Flex direction="column" gap="2">
         <Heading as="h1" align="left" size="8" weight="medium">Color converter</Heading>
         <Text as="p" align="left" size="2" color="gray" weight="regular">Convert between Hex, RGB, and RGB Floating Point Values</Text>

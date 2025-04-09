@@ -31,12 +31,42 @@ const formatRgbFloat = (rgbFloat: string): string => {
   return `rgba(${Number(r).toFixed(4)}, ${Number(g).toFixed(4)}, ${Number(b).toFixed(4)}, ${Number(a).toFixed(4)})`;
 };
 
+// Extract alpha value from RGBA string
+const extractAlpha = (rgbaString: string): number => {
+  const match = rgbaString.match(/rgba?\([^)]+,\s*([\d.]+)\)/);
+  return match ? parseFloat(match[1]) : 1;
+};
+
+// Convert alpha value to hex
+const alphaToHex = (alpha: number): string => {
+  if (alpha === 1) return '';
+  const hexAlpha = Math.round(alpha * 255).toString(16).padStart(2, '0');
+  return hexAlpha;
+};
+
+// Get hex with alpha if present
+const getHexWithAlpha = (hexValue: string, alpha: number): { hex6: string, hex8: string | null } => {
+  const cleanHex = hexValue.replace('#', '');
+  const hex6 = `#${cleanHex}`;
+  
+  if (alpha === 1) {
+    return { hex6, hex8: null };
+  }
+  
+  const hexAlpha = alphaToHex(alpha);
+  const hex8 = `#${cleanHex}${hexAlpha}`;
+  
+  return { hex6, hex8 };
+};
+
 const ColorOutput = ({ rgbaValue, rgbFloatValue, hexValue }: ColorOutputProps) => {
   if (!rgbaValue || !rgbFloatValue) return null;
 
   const formattedRgbFloat = formatRgbFloat(rgbFloatValue);
   const brightness = calculateBrightness(hexValue);
   const isDark = brightness < 128;
+  const alpha = extractAlpha(rgbaValue);
+  const { hex6, hex8 } = getHexWithAlpha(hexValue, alpha);
   
   const labelClass = isDark ? styles['label-dark'] : styles['label-light'];
   const valueClass = isDark ? styles['value-dark'] : styles['value-light'];
@@ -60,25 +90,40 @@ const ColorOutput = ({ rgbaValue, rgbFloatValue, hexValue }: ColorOutputProps) =
   };
 
   return (
-    <Card className={styles.outputCard} style={{ backgroundColor: hexValue }}>
+    <Card className={styles.outputCard} style={{ backgroundColor: alpha < 1 ? rgbaValue : hexValue }}>
       <Flex direction="column" gap="3">
         <div className={styles.colorInfo}>
           <Flex direction="column" gap="5" justify="between">
             <Flex direction="column" gap="1" justify="start">
               <Text size="2" className={labelClass}>Hex</Text>
               <Flex direction="row" gap="2" align="center">
-                <Text 
-                  className={valueClass} 
-                  size="7" 
-                  weight="medium" 
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleCopy(hexValue, 'hex')}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  {hexValue}
-                </Text>
-                {copiedValue === 'hex' && (
+                <Flex direction="row" align="center">
+                  <Text 
+                    className={valueClass} 
+                    size="7" 
+                    weight="medium" 
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handleCopy(hex6, 'hex')}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    {hex6}
+                  </Text>
+                  {hex8 && (
+                    <Text 
+                      className={valueClass} 
+                      size="7" 
+                      weight="medium" 
+                      style={{ cursor: 'pointer', marginLeft: '4px' }}
+                      onClick={() => handleCopy(hex8, 'hex8')}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                    >
+                      {hex8.substring(7)}
+                    </Text>
+                  )}
+                </Flex>
+                {copiedValue && (copiedValue === 'hex' || copiedValue === 'hex8') && (
                   <Text size="1" color="green">Copied</Text>
                 )}
               </Flex>

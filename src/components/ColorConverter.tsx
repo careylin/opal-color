@@ -192,7 +192,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   return (
     <Card className={styles.container} variant="ghost">
       <Tabs.Root defaultValue="hex">
-        <Tabs.List>
+        <Tabs.List color="tomato">
           <Tabs.Trigger value="hex">Hex</Tabs.Trigger>
           <Tabs.Trigger value="rgba">RGBA</Tabs.Trigger>
           <Tabs.Trigger value="float">Float</Tabs.Trigger>
@@ -207,7 +207,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
                 placeholder="#FF0000"
                 size="3"
               />
-              <Button type="submit" size="3">
+              <Button type="submit" size="3" highContrast>
                 Convert
               </Button>
             </Flex>
@@ -229,7 +229,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
                 placeholder="255, 128, 0, 1"
                 size="3"
               />
-              <Button type="submit" size="3">
+              <Button type="submit" size="3" highContrast>
                 Convert
               </Button>
             </Flex>
@@ -251,7 +251,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
                 placeholder="0.5, 0.3, 0.8, 1"
                 size="3"
               />
-              <Button type="submit" size="3">
+              <Button type="submit" size="3" highContrast>
                 Convert
               </Button>
             </Flex>
