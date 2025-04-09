@@ -7,6 +7,7 @@
   --text-secondary: var(--gray-11);
   --text-inverse: var(--gray-1);
   --text-inverse-secondary: var(--gray-5);
+  --color-background: rgba(255, 255, 255, 0);
 }
 
 #root {
@@ -26,6 +27,11 @@
   --quote-font-family: var(--default-font-family);
   --font-size-8: 36px;
   --heading-letter-spacing: -0.02em;
+  --color-background: rgba(255, 255, 255, 0)!important;
+}
+
+body{
+  background-color: #f4f4f4;
 }
 
 .layout-container {

@@ -2,6 +2,11 @@
   max-width: 600px;
   padding: 2rem;
   height: 100%;
+  margin-top: 0px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff, #eeeeee);
+  box-shadow:  6px 6px 12px #dfdfdf,
+             -6px -6px 12px #ffffff88;
 }
 
 .form {

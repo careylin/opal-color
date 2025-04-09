@@ -27,12 +27,12 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     e.preventDefault();
     setError(null);
     
-    // Remove the # if present
-    const cleanHex = hexValue.replace('#', '');
+    // Remove the # if present and trim whitespace
+    const cleanHex = hexValue.replace('#', '').trim();
     
     // Validate hex format
     if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
-      setError('Please enter a valid 6-digit hex color code');
+      setError('Please enter a valid 6-digit hex color code (e.g., #FF0000 or FF0000)');
       return;
     }
 
@@ -48,31 +48,51 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
 
     const rgbaValue = `rgba(${r}, ${g}, ${b}, 1)`;
     const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, 1)`;
-    onConvert(rgbaValue, rgbFloatValue, hexValue);
+    onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`);
+  };
+
+  // Parse RGB Float input in various formats
+  const parseRgbFloatInput = (input: string): { r: number, g: number, b: number, a: number } | null => {
+    // Try to match rgba(r, g, b, a) or rgb(r, g, b) format
+    const rgbaMatch = input.match(/rgba?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+    if (rgbaMatch) {
+      const [, r, g, b, a = "1"] = rgbaMatch;
+      return {
+        r: parseFloat(r),
+        g: parseFloat(g),
+        b: parseFloat(b),
+        a: parseFloat(a)
+      };
+    }
+    
+    // Try to match comma-separated values
+    const values = input.split(',').map(v => v.trim());
+    if (values.length >= 3 && values.length <= 4) {
+      const r = parseFloat(values[0]);
+      const g = parseFloat(values[1]);
+      const b = parseFloat(values[2]);
+      const a = values.length === 4 ? parseFloat(values[3]) : 1;
+      
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b) && !isNaN(a)) {
+        return { r, g, b, a };
+      }
+    }
+    
+    return null;
   };
 
   const handleRgbFloatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRgbFloatError(null);
 
-    // Split the input string and trim whitespace
-    const values = rgbFloatInput.split(',').map(v => v.trim());
+    const parsedValues = parseRgbFloatInput(rgbFloatInput);
     
-    if (values.length < 3 || values.length > 4) {
-      setRgbFloatError('Please enter three or four comma-separated values (RGB or RGBA)');
+    if (!parsedValues) {
+      setRgbFloatError('Please enter valid RGB float values (e.g., 0.5, 0.3, 0.8 or rgba(0.5, 0.3, 0.8, 1))');
       return;
     }
 
-    // Parse the values
-    const r = parseFloat(values[0]);
-    const g = parseFloat(values[1]);
-    const b = parseFloat(values[2]);
-    const a = values.length === 4 ? parseFloat(values[3]) : 1;
-
-    if (isNaN(r) || isNaN(g) || isNaN(b) || isNaN(a)) {
-      setRgbFloatError('Please enter valid numbers');
-      return;
-    }
+    const { r, g, b, a } = parsedValues;
 
     if (r < 0 || r > 1 || g < 0 || g > 1 || b < 0 || b > 1) {
       setRgbFloatError('RGB values must be between 0 and 1');
@@ -100,57 +120,77 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     onConvert(rgbaValue, rgbFloatValue, hexValue);
   };
 
+  // Parse RGB input in various formats
+  const parseRgbInput = (input: string): { r: number, g: number, b: number, a: number } | null => {
+    // Try to match rgba(r, g, b, a) or rgb(r, g, b) format
+    const rgbaMatch = input.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+    if (rgbaMatch) {
+      const [, r, g, b, a = "1"] = rgbaMatch;
+      return {
+        r: parseInt(r),
+        g: parseInt(g),
+        b: parseInt(b),
+        a: parseFloat(a)
+      };
+    }
+    
+    // Try to match comma-separated values
+    const values = input.split(',').map(v => v.trim());
+    if (values.length >= 3 && values.length <= 4) {
+      const r = parseInt(values[0]);
+      const g = parseInt(values[1]);
+      const b = parseInt(values[2]);
+      const a = values.length === 4 ? parseFloat(values[3]) : 1;
+      
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b) && !isNaN(a)) {
+        return { r, g, b, a };
+      }
+    }
+    
+    return null;
+  };
+
   const handleRgbSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRgbError(null);
 
-    // Split the input string and trim whitespace
-    const values = rgbInput.split(',').map(v => v.trim());
+    const parsedValues = parseRgbInput(rgbInput);
     
-    if (values.length < 3 || values.length > 4) {
-      setRgbError('Please enter three or four comma-separated values');
+    if (!parsedValues) {
+      setRgbError('Please enter valid RGB values (e.g., 255, 128, 0 or rgba(255, 128, 0, 1))');
       return;
     }
 
-    // Parse the values
-    const rNum = parseInt(values[0]);
-    const gNum = parseInt(values[1]);
-    const bNum = parseInt(values[2]);
-    const aNum = values.length === 4 ? parseFloat(values[3]) : 1;
+    const { r, g, b, a } = parsedValues;
 
-    if (isNaN(rNum) || isNaN(gNum) || isNaN(bNum) || isNaN(aNum)) {
-      setRgbError('Please enter valid numbers');
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+      setRgbError('RGB values must be between 0 and 255');
       return;
     }
 
-    if (rNum < 0 || rNum > 255 || gNum < 0 || gNum > 255 || bNum < 0 || bNum > 255) {
-      setRgbError('Values must be between 0 and 255');
-      return;
-    }
-
-    if (aNum < 0 || aNum > 1) {
+    if (a < 0 || a > 1) {
       setRgbError('Alpha value must be between 0 and 1');
       return;
     }
 
     // Convert to hex
-    const hexR = rNum.toString(16).padStart(2, '0');
-    const hexG = gNum.toString(16).padStart(2, '0');
-    const hexB = bNum.toString(16).padStart(2, '0');
+    const hexR = r.toString(16).padStart(2, '0');
+    const hexG = g.toString(16).padStart(2, '0');
+    const hexB = b.toString(16).padStart(2, '0');
     const hexValue = `#${hexR}${hexG}${hexB}`;
 
     // Calculate RGB Float values
-    const rFloat = (rNum / 255).toFixed(12);
-    const gFloat = (gNum / 255).toFixed(12);
-    const bFloat = (bNum / 255).toFixed(12);
+    const rFloat = (r / 255).toFixed(12);
+    const gFloat = (g / 255).toFixed(12);
+    const bFloat = (b / 255).toFixed(12);
 
-    const rgbaValue = `rgba(${rNum}, ${gNum}, ${bNum}, ${aNum})`;
-    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${aNum.toFixed(12)})`;
+    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${a})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${a.toFixed(12)})`;
     onConvert(rgbaValue, rgbFloatValue, hexValue);
   };
 
   return (
-    <Card className={styles.container}>
+    <Card className={styles.container} variant="ghost">
       <Tabs.Root defaultValue="hex">
         <Tabs.List>
           <Tabs.Trigger value="hex">Hex</Tabs.Trigger>
@@ -208,7 +248,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
               <TextField.Root type="text"
                 value={rgbFloatInput}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRgbFloatInput(e.target.value)}
-                placeholder="0.364, 0.890, 0.447, 1"
+                placeholder="0.5, 0.3, 0.8, 1"
                 size="3"
               />
               <Button type="submit" size="3">

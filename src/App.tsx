@@ -1,4 +1,4 @@
-import { Heading, Theme } from '@radix-ui/themes';
+import { Heading, Theme, Text, Flex } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 import ColorConverter from './components/ColorConverter';
 import ColorOutput from './components/ColorOutput';
@@ -18,7 +18,10 @@ function App() {
 
   return (
     <Theme accentColor="green" grayColor="mauve">
-      <Heading as="h1" align="left" size="8" weight="medium">Color converter</Heading>
+      <Flex direction="column" gap="2">
+        <Heading as="h1" align="left" size="8" weight="medium">Color converter</Heading>
+        <Text as="p" align="left" size="2" color="gray" weight="regular">Convert between Hex, RGB, and RGB Floating Point Values</Text>
+      </Flex>
       <div className="layout-container">
         <div className="input-section">
           <ColorConverter onConvert={handleColorConvert} />
