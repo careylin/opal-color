@@ -4,8 +4,8 @@
   height: 100%;
   margin-top: 0px;
   border-radius: 12px;
-  background-color: #f2f2f2;
-  box-shadow:inset rgba(0, 0, 0, 0.17) 0px 1px 5px -1px, inset rgba(0, 0, 0, 0.08) 0px -2px 2px 0px;
+  background-color: #ececec;
+  box-shadow: rgba(0, 0, 0, 0.06) 0px 2px 4px 0px inset;
 }
 
 .form {
