@@ -9,6 +9,7 @@ interface CopyableTextProps {
   style?: React.CSSProperties;
   groupId?: string;
   onGroupHover?: (isHovering: boolean) => void;
+  disabled?: boolean;
 }
 
 const CopyableText = ({ 
@@ -18,11 +19,14 @@ const CopyableText = ({
   weight = 'medium',
   style = {},
   groupId,
-  onGroupHover
+  onGroupHover,
+  disabled = false
 }: CopyableTextProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
+    if (disabled) return;
+    
     navigator.clipboard.writeText(text)
       .then(() => {
         setCopied(true);
@@ -37,6 +41,8 @@ const CopyableText = ({
   };
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    
     e.currentTarget.style.opacity = '0.7';
     if (onGroupHover) {
       onGroupHover(true);
@@ -44,6 +50,8 @@ const CopyableText = ({
   };
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    
     e.currentTarget.style.opacity = '1';
     if (onGroupHover) {
       onGroupHover(false);
@@ -57,7 +65,7 @@ const CopyableText = ({
         size={size} 
         weight={weight} 
         style={{ 
-          cursor: 'pointer',
+          cursor: disabled ? 'default' : 'pointer',
           ...style
         }}
         onClick={handleCopy}

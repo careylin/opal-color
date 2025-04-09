@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TextField, Button, Text, Card, Flex, Tabs } from '@radix-ui/themes';
 import styles from './ColorConverter.module.css';
 import { rgbToHSL, rgbFloatToHSL } from '../utils/colorUtils';
@@ -7,6 +7,10 @@ interface ColorConverterProps {
   onConvert: (rgba: string, rgbFloat: string, hex: string, hsl: string) => void;
 }
 
+const DEFAULT_COLOR = '#ececec';
+const DEFAULT_RGBA = '236, 236, 236, 1';
+const DEFAULT_FLOAT = '0.9255, 0.9255, 0.9255, 1.0000';
+
 const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   const [hexValue, setHexValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -14,6 +18,11 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   const [rgbError, setRgbError] = useState<string | null>(null);
   const [rgbFloatInput, setRgbFloatInput] = useState('');
   const [rgbInput, setRgbInput] = useState('');
+
+  // Set default color on initial load
+  useEffect(() => {
+    handleHexSubmit(new Event('submit') as any);
+  }, []);
 
   const handleReset = () => {
     setHexValue('');
@@ -28,8 +37,11 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     e.preventDefault();
     setError(null);
     
+    // If no hex value is provided, use the default color
+    const hexToProcess = hexValue || DEFAULT_COLOR;
+    
     // Remove the # if present and trim whitespace
-    const cleanHex = hexValue.replace('#', '').trim();
+    const cleanHex = hexToProcess.replace('#', '').trim();
     
     // Validate hex format
     if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
@@ -217,7 +229,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
               <TextField.Root type="text"
                 value={hexValue}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHexValue(e.target.value)}
-                placeholder="#FF0000"
+                placeholder={DEFAULT_COLOR}
                 size="3"
               />
               <Button type="submit" size="3" highContrast>
@@ -239,7 +251,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
               <TextField.Root type="text"
                 value={rgbInput}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRgbInput(e.target.value)}
-                placeholder="255, 128, 0, 1"
+                placeholder={DEFAULT_RGBA}
                 size="3"
               />
               <Button type="submit" size="3" highContrast>
@@ -261,7 +273,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
               <TextField.Root type="text"
                 value={rgbFloatInput}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRgbFloatInput(e.target.value)}
-                placeholder="0.5, 0.3, 0.8, 1"
+                placeholder={DEFAULT_FLOAT}
                 size="3"
               />
               <Button type="submit" size="3" highContrast>
