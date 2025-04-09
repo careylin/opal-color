@@ -6,13 +6,11 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
-  const [rgbValue, setRgbValue] = useState<string | null>(null);
   const [rgbaValue, setRgbaValue] = useState<string | null>(null);
   const [rgbFloatValue, setRgbFloatValue] = useState<string | null>(null);
   const [hexValue, setHexValue] = useState<string>('');
 
-  const handleColorConvert = (rgb: string, rgba: string, rgbFloat: string, hex: string) => {
-    setRgbValue(rgb);
+  const handleColorConvert = (rgba: string, rgbFloat: string, hex: string) => {
     setRgbaValue(rgba);
     setRgbFloatValue(rgbFloat);
     setHexValue(hex);
@@ -27,7 +25,6 @@ function App() {
         </div>
         <div className="output-section">
           <ColorOutput 
-            rgbValue={rgbValue} 
             rgbaValue={rgbaValue} 
             rgbFloatValue={rgbFloatValue}
             hexValue={hexValue} 

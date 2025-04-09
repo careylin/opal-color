@@ -1,13 +1,20 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --text-primary: var(--gray-12);
+  --text-secondary: var(--gray-11);
+  --text-inverse: var(--gray-1);
+  --text-inverse-secondary: var(--gray-5);
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
   width: 100%;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .radix-themes {
@@ -43,7 +50,6 @@
   max-width: 66.666%;
   background-color: var(--gray-3);
   border-radius: 8px;
-  padding: 2rem;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;

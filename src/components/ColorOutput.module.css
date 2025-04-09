@@ -1,4 +1,5 @@
 .outputCard {
+  --card-background-color:rgba(0, 0, 0, 0)!important;
   width: 100%;
   height: 100%;
   display: flex;
@@ -14,9 +15,22 @@
 
 .colorInfo {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
   padding: 1rem;
-  background-color: var(--gray-2);
   border-radius: 8px;
+}
+
+.label-light {
+  color: var(--text-secondary);
 } 
+
+.label-dark {
+  color: var(--text-inverse-secondary);
+} 
+
+.value-light {
+  color: var(--text-primary);
+}
+
+.value-dark {
+  color: var(--text-inverse);
+}

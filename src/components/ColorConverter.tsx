@@ -3,7 +3,7 @@ import { TextField, Button, Text, Card, Flex, Tabs } from '@radix-ui/themes';
 import styles from './ColorConverter.module.css';
 
 interface ColorConverterProps {
-  onConvert: (rgb: string, rgba: string, rgbFloat: string, hex: string) => void;
+  onConvert: (rgba: string, rgbFloat: string, hex: string) => void;
 }
 
 const ColorConverter = ({ onConvert }: ColorConverterProps) => {
@@ -46,10 +46,9 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const gFloat = (g / 255).toFixed(12);
     const bFloat = (b / 255).toFixed(12);
 
-    const rgbValue = `rgb(${r}, ${g}, ${b})`;
     const rgbaValue = `rgba(${r}, ${g}, ${b}, 1)`;
-    const rgbFloatValue = `rgb(${rFloat}, ${gFloat}, ${bFloat})`;
-    onConvert(rgbValue, rgbaValue, rgbFloatValue, hexValue);
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, 1)`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue);
   };
 
   const handleRgbFloatSubmit = (e: React.FormEvent) => {
@@ -96,10 +95,9 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const hexB = rgbB.toString(16).padStart(2, '0');
     const hexValue = `#${hexR}${hexG}${hexB}`;
 
-    const rgbValue = `rgb(${rgbR}, ${rgbG}, ${rgbB})`;
     const rgbaValue = `rgba(${rgbR}, ${rgbG}, ${rgbB}, ${a})`;
-    const rgbFloatValue = `rgb(${r.toFixed(12)}, ${g.toFixed(12)}, ${b.toFixed(12)})`;
-    onConvert(rgbValue, rgbaValue, rgbFloatValue, hexValue);
+    const rgbFloatValue = `rgba(${r.toFixed(12)}, ${g.toFixed(12)}, ${b.toFixed(12)}, ${a.toFixed(12)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue);
   };
 
   const handleRgbSubmit = (e: React.FormEvent) => {
@@ -109,8 +107,8 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     // Split the input string and trim whitespace
     const values = rgbInput.split(',').map(v => v.trim());
     
-    if (values.length !== 3) {
-      setRgbError('Please enter three comma-separated values');
+    if (values.length < 3 || values.length > 4) {
+      setRgbError('Please enter three or four comma-separated values');
       return;
     }
 
@@ -118,14 +116,20 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const rNum = parseInt(values[0]);
     const gNum = parseInt(values[1]);
     const bNum = parseInt(values[2]);
+    const aNum = values.length === 4 ? parseFloat(values[3]) : 1;
 
-    if (isNaN(rNum) || isNaN(gNum) || isNaN(bNum)) {
+    if (isNaN(rNum) || isNaN(gNum) || isNaN(bNum) || isNaN(aNum)) {
       setRgbError('Please enter valid numbers');
       return;
     }
 
     if (rNum < 0 || rNum > 255 || gNum < 0 || gNum > 255 || bNum < 0 || bNum > 255) {
       setRgbError('Values must be between 0 and 255');
+      return;
+    }
+
+    if (aNum < 0 || aNum > 1) {
+      setRgbError('Alpha value must be between 0 and 1');
       return;
     }
 
@@ -140,10 +144,9 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const gFloat = (gNum / 255).toFixed(12);
     const bFloat = (bNum / 255).toFixed(12);
 
-    const rgbValue = `rgb(${rNum}, ${gNum}, ${bNum})`;
-    const rgbaValue = `rgba(${rNum}, ${gNum}, ${bNum}, 1)`;
-    const rgbFloatValue = `rgb(${rFloat}, ${gFloat}, ${bFloat})`;
-    onConvert(rgbValue, rgbaValue, rgbFloatValue, hexValue);
+    const rgbaValue = `rgba(${rNum}, ${gNum}, ${bNum}, ${aNum})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${aNum.toFixed(12)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue);
   };
 
   return (
