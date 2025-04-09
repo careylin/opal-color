@@ -43,3 +43,13 @@
   color: #dc2626;
   margin-top: 0.5rem;
 } 
+
+@media (max-width: 768px) {
+
+.container {
+  padding: 1.5rem;
+  margin: 0px!important;
+  width: 100%;
+  }
+
+}
