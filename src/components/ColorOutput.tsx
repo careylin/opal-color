@@ -7,7 +7,8 @@ import {
   formatRgbFloat, 
   getHexWithAlpha,
   hexToHSL,
-  formatHSL
+  formatHSL,
+  alphaToHex
 } from '../utils/colorUtils';
 import CopyableText from './CopyableText';
 
@@ -47,10 +48,35 @@ const ColorOutput = ({
     [rgbaValue]
   );
 
-  const { hex8 } = useMemo(() => 
-    hexValue ? getHexWithAlpha(hexValue, alpha) : { hex6: DEFAULT_COLOR, hex8: null }, 
-    [hexValue, alpha]
-  );
+  // Check if the hex value is a hex8 (with alpha)
+  const isHex8 = useMemo(() => {
+    const cleanHex = hexValue.replace('#', '');
+    return cleanHex.length === 8;
+  }, [hexValue]);
+
+  // Extract hex6 and alpha parts from hex8 if applicable
+  const hexValues = useMemo(() => {
+    const cleanHex = hexValue.replace('#', '');
+    
+    if (isHex8) {
+      // For hex8, extract the hex6 and alpha parts
+      const hex6Part = `#${cleanHex.substring(0, 6)}`;
+      const alphaPart = cleanHex.substring(6, 8);
+      return { 
+        hex6: hex6Part, 
+        hex8: hexValue,
+        alphaHex: alphaPart
+      };
+    } else {
+      // For hex6, use the getHexWithAlpha function
+      const { hex6, hex8 } = getHexWithAlpha(hexValue, alpha);
+      return { 
+        hex6, 
+        hex8,
+        alphaHex: alpha < 1 ? alphaToHex(alpha) : null
+      };
+    }
+  }, [hexValue, alpha, isHex8]);
   
   // Calculate HSL values if not provided
   const calculatedHsl = useMemo(() => 
@@ -71,9 +97,15 @@ const ColorOutput = ({
   
   // State to track if the alpha part is being hovered
   const [isAlphaHovered, setIsAlphaHovered] = useState(false);
+  const [isHex6Hovered, setIsHex6Hovered] = useState(false);
 
-  // Handle group hover for hex parts
-  const handleHexGroupHover = (isHovering: boolean) => {
+  // Handle hover for hex6 part
+  const handleHex6Hover = (isHovering: boolean) => {
+    setIsHex6Hovered(isHovering);
+  };
+
+  // Handle hover for alpha part
+  const handleAlphaHover = (isHovering: boolean) => {
     setIsAlphaHovered(isHovering);
   };
 
@@ -92,21 +124,21 @@ const ColorOutput = ({
               <Flex direction="row" gap="2" align="center">
                 <Flex direction="row" align="center">
                   <CopyableText 
-                    text={hexValue || DEFAULT_COLOR}
+                    text={hexValues.hex6}
                     className={valueClass}
                     size="7"
                     weight="medium"
-                    groupId="hex-group"
-                    onGroupHover={handleHexGroupHover}
+                    groupId="hex6-group"
+                    onGroupHover={handleHex6Hover}
                     style={{ 
                       ...placeholderStyle,
-                      opacity: isAlphaHovered ? '0.7' : placeholderStyle.opacity 
+                      opacity: isHex6Hovered || isAlphaHovered ? '0.7' : placeholderStyle.opacity 
                     }}
                     disabled={!hasValues}
                   />
-                  {hex8 && (
+                  {hexValues.alphaHex && (
                     <CopyableText 
-                      text={hex8.substring(7)}
+                      text={hexValues.alphaHex}
                       className={valueClass}
                       size="7"
                       weight="medium"
@@ -114,8 +146,8 @@ const ColorOutput = ({
                         marginLeft: '4px',
                         opacity: isAlphaHovered ? '0.7' : placeholderStyle.opacity 
                       }}
-                      groupId="hex-group"
-                      onGroupHover={handleHexGroupHover}
+                      groupId="alpha-group"
+                      onGroupHover={handleAlphaHover}
                       disabled={!hasValues}
                     />
                   )}

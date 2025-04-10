@@ -43,16 +43,25 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     // Remove the # if present and trim whitespace
     const cleanHex = hexToProcess.replace('#', '').trim();
     
-    // Validate hex format
-    if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
-      setError('Please enter a valid 6-digit hex color code (e.g., #FF0000 or FF0000)');
+    // Check if it's a hex6 or hex8 format
+    const isHex6 = /^[0-9A-Fa-f]{6}$/.test(cleanHex);
+    const isHex8 = /^[0-9A-Fa-f]{8}$/.test(cleanHex);
+    
+    if (!isHex6 && !isHex8) {
+      setError('Please enter a valid 6-digit or 8-digit hex color code (e.g., #FF0000 or FF0000FF)');
       return;
     }
 
-    // Convert hex to RGB
+    // Extract RGB values
     const r = parseInt(cleanHex.substring(0, 2), 16);
     const g = parseInt(cleanHex.substring(2, 4), 16);
     const b = parseInt(cleanHex.substring(4, 6), 16);
+    
+    // Extract alpha value if it's a hex8
+    let alpha = 1;
+    if (isHex8) {
+      alpha = parseInt(cleanHex.substring(6, 8), 16) / 255;
+    }
 
     // Calculate RGB Float values
     const rFloat = (r / 255).toFixed(12);
@@ -61,10 +70,10 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
 
     // Calculate HSL values
     const hsl = rgbToHSL(r, g, b);
-    const hslValue = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${alpha})`;
 
-    const rgbaValue = `rgba(${r}, ${g}, ${b}, 1)`;
-    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, 1)`;
+    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${alpha})`;
     onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`, hslValue);
   };
 
@@ -229,7 +238,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
               <TextField.Root type="text"
                 value={hexValue}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHexValue(e.target.value)}
-                placeholder={DEFAULT_COLOR}
+                placeholder={`${DEFAULT_COLOR}`}
                 size="3"
               />
               <Button type="submit" size="3" highContrast>
