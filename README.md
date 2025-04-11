@@ -1,4 +1,4 @@
-# Opal Color
+# ◆ Opal Color
 
 Enter a hex, rgb, or floating point rgb to get that color in various formats. This started as an idea when I couldn't find a good RGBFloat to Hex converter. Other color formats may be added later.
 
