@@ -1,5 +1,5 @@
 {
-  "name": "float-to-hex",
+  "name": "opal-color",
   "private": true,
   "version": "0.0.0",
   "type": "module",
