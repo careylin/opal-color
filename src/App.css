@@ -27,12 +27,14 @@
   --em-font-family: var(--default-font-family);
   --quote-font-family: var(--default-font-family);
   --font-size-8: 36px;
-  --heading-letter-spacing: -0.02em;
+  --font-size-9: 48px;
+  --heading-letter-spacing: -0.03em;
   --color-background: rgba(255, 255, 255, 0)!important;
 }
 
 body{
-  background-color: #f0f0f0;
+  background-color: #F3F1F4;
+  background-image: radial-gradient(farthest-corner at 120px 180px, hsl(280 11% 96% / 1) 0%, #E4E3E5 100%);
 }
 
 .rt-BaseButton.rt-variant-solid {

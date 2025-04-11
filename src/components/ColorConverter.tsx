@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { TextField, Button, Text, Card, Flex, Tabs } from '@radix-ui/themes';
 import styles from './ColorConverter.module.css';
-import { rgbToHSL, rgbFloatToHSL } from '../utils/colorUtils';
+import { rgbToHSL, rgbFloatToHSL, formatFloatValue } from '../utils/colorUtils';
+import { DEFAULT_COLOR, DEFAULT_RGBA, DEFAULT_FLOAT } from '../config/colors';
 
 interface ColorConverterProps {
   onConvert: (rgba: string, rgbFloat: string, hex: string, hsl: string) => void;
 }
-
-const DEFAULT_COLOR = '#ececec';
-const DEFAULT_RGBA = '236, 236, 236, 1';
-const DEFAULT_FLOAT = '0.9255, 0.9255, 0.9255, 1.0000';
 
 const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   const [hexValue, setHexValue] = useState('');
@@ -64,16 +61,16 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     }
 
     // Calculate RGB Float values
-    const rFloat = (r / 255).toFixed(12);
-    const gFloat = (g / 255).toFixed(12);
-    const bFloat = (b / 255).toFixed(12);
+    const rFloat = formatFloatValue(r / 255);
+    const gFloat = formatFloatValue(g / 255);
+    const bFloat = formatFloatValue(b / 255);
 
     // Calculate HSL values
     const hsl = rgbToHSL(r, g, b);
-    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${alpha})`;
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(alpha)})`;
 
-    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${alpha})`;
+    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${formatFloatValue(alpha)})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(alpha)})`;
     onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`, hslValue);
   };
 
@@ -143,10 +140,10 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
 
     // Calculate HSL values
     const hsl = rgbFloatToHSL(r, g, b);
-    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`;
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(a)})`;
 
-    const rgbaValue = `rgba(${rgbR}, ${rgbG}, ${rgbB}, ${a})`;
-    const rgbFloatValue = `rgba(${r.toFixed(12)}, ${g.toFixed(12)}, ${b.toFixed(12)}, ${a.toFixed(12)})`;
+    const rgbaValue = `rgba(${rgbR}, ${rgbG}, ${rgbB}, ${formatFloatValue(a)})`;
+    const rgbFloatValue = `rgba(${formatFloatValue(r)}, ${formatFloatValue(g)}, ${formatFloatValue(b)}, ${formatFloatValue(a)})`;
     onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
   };
 
@@ -210,16 +207,16 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     const hexValue = `#${hexR}${hexG}${hexB}`;
 
     // Calculate RGB Float values
-    const rFloat = (r / 255).toFixed(12);
-    const gFloat = (g / 255).toFixed(12);
-    const bFloat = (b / 255).toFixed(12);
+    const rFloat = formatFloatValue(r / 255);
+    const gFloat = formatFloatValue(g / 255);
+    const bFloat = formatFloatValue(b / 255);
 
     // Calculate HSL values
     const hsl = rgbToHSL(r, g, b);
-    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`;
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(a)})`;
 
-    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${a})`;
-    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${a.toFixed(12)})`;
+    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${formatFloatValue(a)})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(a)})`;
     onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
   };
 

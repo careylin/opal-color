@@ -4,8 +4,7 @@ import ColorConverter from './components/ColorConverter';
 import ColorOutput from './components/ColorOutput';
 import { useState, useEffect } from 'react'
 import './App.css'
-
-const DEFAULT_COLOR = '#ececec';
+import { DEFAULT_COLOR, DEFAULT_RGBA, DEFAULT_FLOAT, DEFAULT_HSL } from './config/colors';
 
 function App() {
   const [rgbaValue, setRgbaValue] = useState<string | null>(null);
@@ -15,22 +14,10 @@ function App() {
 
   // Set default color on initial load
   useEffect(() => {
-    // Convert default color to other formats
-    const r = parseInt(DEFAULT_COLOR.substring(1, 3), 16);
-    const g = parseInt(DEFAULT_COLOR.substring(3, 5), 16);
-    const b = parseInt(DEFAULT_COLOR.substring(5, 7), 16);
-    
-    const rFloat = (r / 255).toFixed(12);
-    const gFloat = (g / 255).toFixed(12);
-    const bFloat = (b / 255).toFixed(12);
-    
-    const rgba = `rgba(${r}, ${g}, ${b}, 1)`;
-    const rgbFloat = `rgba(${rFloat}, ${gFloat}, ${bFloat}, 1)`;
-    
-    setRgbaValue(rgba);
-    setRgbFloatValue(rgbFloat);
+    setRgbaValue(`rgba(${DEFAULT_RGBA})`);
+    setRgbFloatValue(`rgba(${DEFAULT_FLOAT})`);
     setHexValue(DEFAULT_COLOR);
-    setHslValue(`hsl(0, 0%, 92%)`); // Approximate HSL for #ececec
+    setHslValue(DEFAULT_HSL);
   }, []);
 
   const handleColorConvert = (rgba: string, rgbFloat: string, hex: string, hsl: string) => {
@@ -43,7 +30,7 @@ function App() {
   return (
     <Theme accentColor="gray" grayColor="sage">
       <Flex direction="column" gap="2">
-        <Heading as="h1" align="left" size="8" weight="medium">Color converter</Heading>
+        <Heading as="h1" align="left" size="9" weight="medium">Opal Color</Heading>
         <Text as="p" align="left" size="2" color="gray" weight="regular">Convert between Hex, RGB, and RGB Floating Point Values</Text>
       </Flex>
       <div className="layout-container">

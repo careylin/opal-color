@@ -18,6 +18,13 @@ export const calculateBrightness = (hexColor: string): number => {
   return Math.round(((r * 299) + (g * 587) + (b * 114)) / 1000);
 };
 
+// Format a float value with 3 decimal places, no decimals for whole numbers
+export const formatFloatValue = (value: number): string => {
+  // Check if the value is a whole number (integer)
+  if (Number.isInteger(value)) return value.toString();
+  return value.toFixed(3);
+};
+
 // Format RGB float values to a consistent format
 export const formatRgbFloat = (rgbFloat: string): string => {
   // Extract the numbers from the rgb() or rgba() format
@@ -25,7 +32,7 @@ export const formatRgbFloat = (rgbFloat: string): string => {
   if (!matches) return rgbFloat;
   
   const [, r, g, b, a = "1"] = matches;
-  return `rgba(${Number(r).toFixed(4)}, ${Number(g).toFixed(4)}, ${Number(b).toFixed(4)}, ${Number(a).toFixed(4)})`;
+  return `rgba(${formatFloatValue(Number(r))}, ${formatFloatValue(Number(g))}, ${formatFloatValue(Number(b))}, ${formatFloatValue(Number(a))})`;
 };
 
 // Convert alpha value to hex
@@ -99,7 +106,7 @@ export const formatHSL = (h: number, s: number, l: number, alpha: number = 1): s
   if (alpha === 1) {
     return `hsl(${h}, ${s}%, ${l}%)`;
   }
-  return `hsla(${h}, ${s}%, ${l}%, ${alpha.toFixed(4)})`;
+  return `hsla(${h}, ${s}%, ${l}%, ${formatFloatValue(alpha)})`;
 };
 
 // Convert RGB to HSL
@@ -135,7 +142,7 @@ export const rgbToHSL = (r: number, g: number, b: number): { h: number, s: numbe
     h /= 6;
   }
   
-  // Convert to degrees, percentage, percentage
+  // Convert to degrees, percentage, percentage and round to whole numbers
   return {
     h: Math.round(h * 360),
     s: Math.round(s * 100),
@@ -172,7 +179,7 @@ export const rgbFloatToHSL = (r: number, g: number, b: number): { h: number, s: 
     h /= 6;
   }
   
-  // Convert to degrees, percentage, percentage
+  // Convert to degrees, percentage, percentage and round to whole numbers
   return {
     h: Math.round(h * 360),
     s: Math.round(s * 100),

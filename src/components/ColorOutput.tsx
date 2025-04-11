@@ -11,6 +11,7 @@ import {
   alphaToHex
 } from '../utils/colorUtils';
 import CopyableText from './CopyableText';
+import { DEFAULT_COLOR } from '../config/colors';
 
 interface ColorOutputProps {
   rgbaValue: string | null;
@@ -18,8 +19,6 @@ interface ColorOutputProps {
   hexValue: string;
   hslValue?: string | null;
 }
-
-const DEFAULT_COLOR = '#ececec';
 
 const ColorOutput = ({ 
   rgbaValue, 
