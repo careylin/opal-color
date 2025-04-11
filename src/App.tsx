@@ -28,7 +28,7 @@ function App() {
   };
 
   return (
-    <Theme accentColor="gray" grayColor="sage">
+    <Theme accentColor="gray" grayColor="sage" radius="large">
       <Flex direction="column" gap="2">
         <Heading as="h1" align="left" size="9" weight="medium">Opal Color</Heading>
         <Text as="p" align="left" size="2" color="gray" weight="regular">Convert between Hex, RGB, and RGB Floating Point Values</Text>

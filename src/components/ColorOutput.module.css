@@ -10,7 +10,6 @@
 .colorInfo {
   display: flex;
   padding: 1rem;
-  border-radius: 8px;
 }
 
 .label-light {

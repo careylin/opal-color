@@ -223,7 +223,7 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   return (
     <Card className={styles.container} variant="ghost">
       <Tabs.Root defaultValue="hex">
-        <Tabs.List color="tomato">
+        <Tabs.List color="mint">
           <Tabs.Trigger value="hex">Hex</Tabs.Trigger>
           <Tabs.Trigger value="rgba">RGBA</Tabs.Trigger>
           <Tabs.Trigger value="float">Float</Tabs.Trigger>
