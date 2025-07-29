@@ -2,29 +2,27 @@ import { Card, Text, Flex } from '@radix-ui/themes';
 import { useMemo, useState } from 'react';
 import styles from './ColorOutput.module.css';
 import { 
-  extractAlpha, 
-  calculateBrightness, 
   formatRgbFloat, 
-  getHexWithAlpha,
-  hexToHSL,
-  formatHSL,
   alphaToHex
 } from '../utils/colorUtils';
 import CopyableText from './CopyableText';
 import { DEFAULT_COLOR } from '../config/colors';
+import { colord } from "colord";
 
 interface ColorOutputProps {
   rgbaValue: string | null;
   rgbFloatValue: string | null;
   hexValue: string;
   hslValue?: string | null;
+  labValue?: string | null;
 }
 
 const ColorOutput = ({ 
   rgbaValue, 
   rgbFloatValue, 
   hexValue = DEFAULT_COLOR, 
-  hslValue 
+  hslValue,
+  labValue
 }: ColorOutputProps) => {
   // Memoize all calculations to prevent unnecessary recalculations
   const formattedRgbFloat = useMemo(() => 
@@ -32,20 +30,26 @@ const ColorOutput = ({
     [rgbFloatValue]
   );
 
-  const brightness = useMemo(() => 
-    hexValue ? calculateBrightness(hexValue) : 255, 
-    [hexValue]
-  );
+  // Use Colord for lightness calculation (HSL lightness is better for contrast detection)
+  const lightness = useMemo(() => {
+    if (!hexValue) return 100;
+    const color = colord(hexValue);
+    if (!color.isValid()) return 100;
+    const hsl = color.toHsl();
+    return hsl.l; // HSL lightness (0-100)
+  }, [hexValue]);
 
   const isDark = useMemo(() => 
-    brightness < 128, 
-    [brightness]
+    lightness < 50, 
+    [lightness]
   );
 
-  const alpha = useMemo(() => 
-    rgbaValue ? extractAlpha(rgbaValue) : 1, 
-    [rgbaValue]
-  );
+  // Use Colord for alpha extraction
+  const alpha = useMemo(() => {
+    if (!rgbaValue) return 1;
+    const color = colord(rgbaValue);
+    return color.isValid() ? color.alpha() : 1;
+  }, [rgbaValue]);
 
   // Check if the hex value is a hex8 (with alpha)
   const isHex8 = useMemo(() => {
@@ -67,8 +71,10 @@ const ColorOutput = ({
         alphaHex: alphaPart
       };
     } else {
-      // For hex6, use the getHexWithAlpha function
-      const { hex6, hex8 } = getHexWithAlpha(hexValue, alpha);
+      // For hex6, use Colord to get hex with alpha
+      const color = colord(hexValue);
+      const hex6 = color.toHex();
+      const hex8 = alpha < 1 ? color.alpha(alpha).toHex() : null;
       return { 
         hex6, 
         hex8,
@@ -77,19 +83,34 @@ const ColorOutput = ({
     }
   }, [hexValue, alpha, isHex8]);
   
-  // Calculate HSL values if not provided
-  const calculatedHsl = useMemo(() => 
-    hexValue ? hexToHSL(hexValue) : { h: 0, s: 0, l: 100 }, 
-    [hexValue]
-  );
+  // Calculate HSL values if not provided using Colord
+  const calculatedHsl = useMemo(() => {
+    if (!hexValue) return { h: 0, s: 0, l: 100 };
+    const color = colord(hexValue);
+    if (!color.isValid()) return { h: 0, s: 0, l: 100 };
+    const hsl = color.toHsl();
+    return { h: hsl.h, s: hsl.s, l: hsl.l };
+  }, [hexValue]);
   
-  const calculatedHslValue = useMemo(() => 
-    formatHSL(calculatedHsl.h, calculatedHsl.s, calculatedHsl.l, alpha), 
-    [calculatedHsl, alpha]
-  );
+  const calculatedHslValue = useMemo(() => {
+    const color = colord(hexValue);
+    if (!color.isValid()) return 'hsl(0, 0%, 100%)';
+    return color.alpha(alpha).toHslString();
+  }, [hexValue, alpha]);
   
   // Use provided HSL value or calculated one
   const displayHslValue = hslValue || calculatedHslValue;
+  
+  // Calculate LAB values if not provided using Colord
+  const calculatedLabValue = useMemo(() => {
+    const color = colord(hexValue);
+    if (!color.isValid()) return 'lab(100% 0 0 / 1)';
+    const lab = color.toLab();
+    return `lab(${lab.l.toFixed(2)}% ${lab.a.toFixed(2)} ${lab.b.toFixed(2)} / ${alpha.toFixed(2)})`;
+  }, [hexValue, alpha]);
+  
+  // Use provided LAB value or calculated one
+  const displayLabValue = labValue || calculatedLabValue;
   
   const labelClass = isDark ? styles['label-dark'] : styles['label-light'];
   const valueClass = isDark ? styles['value-dark'] : styles['value-light'];
@@ -137,7 +158,8 @@ const ColorOutput = ({
                   />
                   {hexValues.alphaHex && (
                     <CopyableText 
-                      text={hexValues.alphaHex}
+                      text={hexValues.hex8}
+                      displayText={hexValues.alphaHex}
                       className={valueClass}
                       size="7"
                       weight="medium"
@@ -184,6 +206,19 @@ const ColorOutput = ({
               <Flex direction="row" gap="2" align="center">
                 <CopyableText 
                   text={displayHslValue || 'hsl(0, 0%, 100%)'}
+                  className={valueClass}
+                  size="7"
+                  weight="medium"
+                  style={placeholderStyle}
+                  disabled={!hasValues}
+                />
+              </Flex>
+            </Flex>
+            <Flex direction="column" gap="1" justify="start">
+              <Text size="2" className={labelClass}>LAB</Text>
+              <Flex direction="row" gap="2" align="center">
+                <CopyableText 
+                  text={displayLabValue || 'lab(100% 0 0 / 1)'}
                   className={valueClass}
                   size="7"
                   weight="medium"

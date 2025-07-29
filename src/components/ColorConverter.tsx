@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { TextField, Button, Text, Card, Flex, Tabs } from '@radix-ui/themes';
 import styles from './ColorConverter.module.css';
-import { rgbToHSL, rgbFloatToHSL, formatFloatValue } from '../utils/colorUtils';
-import { DEFAULT_COLOR, DEFAULT_RGBA, DEFAULT_FLOAT } from '../config/colors';
+import { formatFloatValue } from '../utils/colorUtils';
+import { DEFAULT_COLOR, DEFAULT_RGBA, DEFAULT_FLOAT, DEFAULT_HSL, DEFAULT_LAB } from '../config/colors';
+import { colord } from "colord";
 
 interface ColorConverterProps {
-  onConvert: (rgba: string, rgbFloat: string, hex: string, hsl: string) => void;
+  onConvert: (rgba: string, rgbFloat: string, hex: string, hsl: string, lab: string) => void;
 }
 
 const ColorConverter = ({ onConvert }: ColorConverterProps) => {
@@ -13,8 +14,12 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
   const [error, setError] = useState<string | null>(null);
   const [rgbFloatError, setRgbFloatError] = useState<string | null>(null);
   const [rgbError, setRgbError] = useState<string | null>(null);
+  const [hslError, setHslError] = useState<string | null>(null);
+  const [labError, setLabError] = useState<string | null>(null);
   const [rgbFloatInput, setRgbFloatInput] = useState('');
   const [rgbInput, setRgbInput] = useState('');
+  const [hslInput, setHslInput] = useState('');
+  const [labInput, setLabInput] = useState('');
 
   // Set default color on initial load
   useEffect(() => {
@@ -25,9 +30,13 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
     setHexValue('');
     setRgbFloatInput('');
     setRgbInput('');
+    setHslInput('');
+    setLabInput('');
     setError(null);
     setRgbFloatError(null);
     setRgbError(null);
+    setHslError(null);
+    setLabError(null);
   };
 
   const handleHexSubmit = (e: React.FormEvent) => {
@@ -49,29 +58,36 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
       return;
     }
 
-    // Extract RGB values
-    const r = parseInt(cleanHex.substring(0, 2), 16);
-    const g = parseInt(cleanHex.substring(2, 4), 16);
-    const b = parseInt(cleanHex.substring(4, 6), 16);
+    // Use Colord to parse and convert the color
+    const color = colord(`#${cleanHex}`);
     
-    // Extract alpha value if it's a hex8
-    let alpha = 1;
-    if (isHex8) {
-      alpha = parseInt(cleanHex.substring(6, 8), 16) / 255;
+    if (!color.isValid()) {
+      setError('Please enter a valid hex color code');
+      return;
     }
 
+    // Extract values using Colord
+    const rgb = color.toRgb();
+    const alpha = color.alpha();
+    
     // Calculate RGB Float values
-    const rFloat = formatFloatValue(r / 255);
-    const gFloat = formatFloatValue(g / 255);
-    const bFloat = formatFloatValue(b / 255);
+    const rFloat = formatFloatValue(rgb.r / 255);
+    const gFloat = formatFloatValue(rgb.g / 255);
+    const bFloat = formatFloatValue(rgb.b / 255);
 
-    // Calculate HSL values
-    const hsl = rgbToHSL(r, g, b);
+    // Get HSL and LAB using Colord
+    const hsl = color.toHsl();
+    const lab = color.toLab();
     const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(alpha)})`;
+    const labValue = `lab(${formatFloatValue(lab.l)}% ${formatFloatValue(lab.a)} ${formatFloatValue(lab.b)} / ${formatFloatValue(alpha)})`;
 
-    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${formatFloatValue(alpha)})`;
+    const rgbaValue = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${formatFloatValue(alpha)})`;
     const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(alpha)})`;
-    onConvert(rgbaValue, rgbFloatValue, `#${cleanHex}`, hslValue);
+    
+    // Preserve original hex8 value if it was a hex8 input, otherwise use Colord's conversion
+    const hexOutput = isHex8 ? `#${cleanHex}` : color.toHex();
+    
+    onConvert(rgbaValue, rgbFloatValue, hexOutput, hslValue, labValue);
   };
 
   // Parse RGB Float input in various formats
@@ -127,24 +143,32 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
       return;
     }
 
-    // Convert to RGB
-    const rgbR = Math.round(r * 255);
-    const rgbG = Math.round(g * 255);
-    const rgbB = Math.round(b * 255);
+    // Use Colord to convert from RGB float values
+    const color = colord({ r: r * 255, g: g * 255, b: b * 255, a });
+    
+    if (!color.isValid()) {
+      setRgbFloatError('Invalid color values');
+      return;
+    }
 
+    // Extract values using Colord
+    const rgb = color.toRgb();
+    const alpha = color.alpha();
+    
     // Convert to hex
-    const hexR = rgbR.toString(16).padStart(2, '0');
-    const hexG = rgbG.toString(16).padStart(2, '0');
-    const hexB = rgbB.toString(16).padStart(2, '0');
-    const hexValue = `#${hexR}${hexG}${hexB}`;
+    const hexValue = color.toHex();
 
-    // Calculate HSL values
-    const hsl = rgbFloatToHSL(r, g, b);
-    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(a)})`;
+    // Get HSL using Colord
+    const hsl = color.toHsl();
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(alpha)})`;
 
-    const rgbaValue = `rgba(${rgbR}, ${rgbG}, ${rgbB}, ${formatFloatValue(a)})`;
-    const rgbFloatValue = `rgba(${formatFloatValue(r)}, ${formatFloatValue(g)}, ${formatFloatValue(b)}, ${formatFloatValue(a)})`;
-    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
+    // Get LAB using Colord
+    const lab = color.toLab();
+    const labValue = `lab(${formatFloatValue(lab.l)}% ${formatFloatValue(lab.a)} ${formatFloatValue(lab.b)} / ${formatFloatValue(alpha)})`;
+
+    const rgbaValue = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${formatFloatValue(alpha)})`;
+    const rgbFloatValue = `rgba(${formatFloatValue(r)}, ${formatFloatValue(g)}, ${formatFloatValue(b)}, ${formatFloatValue(alpha)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue, labValue);
   };
 
   // Parse RGB input in various formats
@@ -200,24 +224,227 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
       return;
     }
 
+    // Use Colord to convert from RGB values
+    const color = colord({ r, g, b, a });
+    
+    if (!color.isValid()) {
+      setRgbError('Invalid color values');
+      return;
+    }
+
+    // Extract values using Colord
+    const rgb = color.toRgb();
+    const alpha = color.alpha();
+    
     // Convert to hex
-    const hexR = r.toString(16).padStart(2, '0');
-    const hexG = g.toString(16).padStart(2, '0');
-    const hexB = b.toString(16).padStart(2, '0');
-    const hexValue = `#${hexR}${hexG}${hexB}`;
+    const hexValue = color.toHex();
 
     // Calculate RGB Float values
     const rFloat = formatFloatValue(r / 255);
     const gFloat = formatFloatValue(g / 255);
     const bFloat = formatFloatValue(b / 255);
 
-    // Calculate HSL values
-    const hsl = rgbToHSL(r, g, b);
-    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(a)})`;
+    // Get HSL using Colord
+    const hsl = color.toHsl();
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(alpha)})`;
 
-    const rgbaValue = `rgba(${r}, ${g}, ${b}, ${formatFloatValue(a)})`;
-    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(a)})`;
-    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue);
+    // Get LAB using Colord
+    const lab = color.toLab();
+    const labValue = `lab(${formatFloatValue(lab.l)}% ${formatFloatValue(lab.a)} ${formatFloatValue(lab.b)} / ${formatFloatValue(alpha)})`;
+
+    const rgbaValue = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${formatFloatValue(alpha)})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(alpha)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue, labValue);
+  };
+
+  // Parse LAB input in various formats
+  const parseLabInput = (input: string): { l: number, a: number, b: number, alpha: number } | null => {
+    // Try to match lab(l a b / alpha) format
+    const labMatch = input.match(/lab\s*\(\s*([\d.]+)%?\s+([-\d.]+)\s+([-\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)/i);
+    if (labMatch) {
+      const [, l, a, b, alpha = "1"] = labMatch;
+      return {
+        l: parseFloat(l),
+        a: parseFloat(a),
+        b: parseFloat(b),
+        alpha: parseFloat(alpha)
+      };
+    }
+    
+    // Try to match comma-separated values
+    const values = input.split(',').map(v => v.trim());
+    if (values.length >= 3 && values.length <= 4) {
+      const l = parseFloat(values[0]);
+      const a = parseFloat(values[1]);
+      const b = parseFloat(values[2]);
+      const alpha = values.length === 4 ? parseFloat(values[3]) : 1;
+      
+      if (!isNaN(l) && !isNaN(a) && !isNaN(b) && !isNaN(alpha)) {
+        return { l, a, b, alpha };
+      }
+    }
+    
+    return null;
+  };
+
+  const handleLabSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLabError(null);
+
+    const parsedValues = parseLabInput(labInput);
+    
+    if (!parsedValues) {
+      setLabError('Please enter valid LAB values (e.g., 53.24, 80.09, 67.2 or lab(53.24% 80.09 67.2 / 1))');
+      return;
+    }
+
+    const { l, a, b, alpha } = parsedValues;
+
+    // LAB value ranges: L: 0-100, a: -128 to 127, b: -128 to 127
+    if (l < 0 || l > 100) {
+      setLabError('L value must be between 0 and 100');
+      return;
+    }
+
+    if (a < -128 || a > 127) {
+      setLabError('a value must be between -128 and 127');
+      return;
+    }
+
+    if (b < -128 || b > 127) {
+      setLabError('b value must be between -128 and 127');
+      return;
+    }
+
+    if (alpha < 0 || alpha > 1) {
+      setLabError('Alpha value must be between 0 and 1');
+      return;
+    }
+
+    // Use Colord to convert from LAB values
+    const color = colord({ l, a, b, alpha });
+    
+    if (!color.isValid()) {
+      setLabError('Invalid LAB color values');
+      return;
+    }
+
+    // Extract values using Colord
+    const rgb = color.toRgb();
+    const extractedAlpha = color.alpha();
+    
+    // Convert to hex
+    const hexValue = color.toHex();
+
+    // Calculate RGB Float values
+    const rFloat = formatFloatValue(rgb.r / 255);
+    const gFloat = formatFloatValue(rgb.g / 255);
+    const bFloat = formatFloatValue(rgb.b / 255);
+
+    // Get HSL and LAB using Colord
+    const hsl = color.toHsl();
+    const lab = color.toLab();
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(extractedAlpha)})`;
+    const labValue = `lab(${formatFloatValue(lab.l)}% ${formatFloatValue(lab.a)} ${formatFloatValue(lab.b)} / ${formatFloatValue(extractedAlpha)})`;
+
+    const rgbaValue = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${formatFloatValue(extractedAlpha)})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(extractedAlpha)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue, labValue);
+  };
+
+  // Parse HSL input in various formats
+  const parseHslInput = (input: string): { h: number, s: number, l: number, a: number } | null => {
+    // Try to match hsla(h, s%, l%, a) or hsl(h, s%, l%) format
+    const hslMatch = input.match(/hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%(?:\s*,\s*([\d.]+))?\s*\)/i);
+    if (hslMatch) {
+      const [, h, s, l, a = "1"] = hslMatch;
+      return {
+        h: parseFloat(h),
+        s: parseFloat(s),
+        l: parseFloat(l),
+        a: parseFloat(a)
+      };
+    }
+    
+    // Try to match comma-separated values
+    const values = input.split(',').map(v => v.trim());
+    if (values.length >= 3 && values.length <= 4) {
+      const h = parseFloat(values[0]);
+      const s = parseFloat(values[1]);
+      const l = parseFloat(values[2]);
+      const a = values.length === 4 ? parseFloat(values[3]) : 1;
+      
+      if (!isNaN(h) && !isNaN(s) && !isNaN(l) && !isNaN(a)) {
+        return { h, s, l, a };
+      }
+    }
+    
+    return null;
+  };
+
+  const handleHslSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setHslError(null);
+
+    const parsedValues = parseHslInput(hslInput);
+    
+    if (!parsedValues) {
+      setHslError('Please enter valid HSL values (e.g., 150, 9, 96 or hsla(150, 9%, 96%, 1))');
+      return;
+    }
+
+    const { h, s, l, a } = parsedValues;
+
+    // HSL value ranges: H: 0-360, S: 0-100, L: 0-100
+    if (h < 0 || h > 360) {
+      setHslError('Hue value must be between 0 and 360');
+      return;
+    }
+
+    if (s < 0 || s > 100) {
+      setHslError('Saturation value must be between 0 and 100');
+      return;
+    }
+
+    if (l < 0 || l > 100) {
+      setHslError('Lightness value must be between 0 and 100');
+      return;
+    }
+
+    if (a < 0 || a > 1) {
+      setHslError('Alpha value must be between 0 and 1');
+      return;
+    }
+
+    // Use Colord to convert from HSL values
+    const color = colord({ h, s, l, a });
+    
+    if (!color.isValid()) {
+      setHslError('Invalid HSL color values');
+      return;
+    }
+
+    // Extract values using Colord
+    const rgb = color.toRgb();
+    const alpha = color.alpha();
+    
+    // Convert to hex
+    const hexValue = color.toHex();
+
+    // Calculate RGB Float values
+    const rFloat = formatFloatValue(rgb.r / 255);
+    const gFloat = formatFloatValue(rgb.g / 255);
+    const bFloat = formatFloatValue(rgb.b / 255);
+
+    // Get HSL and LAB using Colord
+    const hsl = color.toHsl();
+    const lab = color.toLab();
+    const hslValue = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${formatFloatValue(alpha)})`;
+    const labValue = `lab(${formatFloatValue(lab.l)}% ${formatFloatValue(lab.a)} ${formatFloatValue(lab.b)} / ${formatFloatValue(alpha)})`;
+
+    const rgbaValue = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${formatFloatValue(alpha)})`;
+    const rgbFloatValue = `rgba(${rFloat}, ${gFloat}, ${bFloat}, ${formatFloatValue(alpha)})`;
+    onConvert(rgbaValue, rgbFloatValue, hexValue, hslValue, labValue);
   };
 
   return (
@@ -227,6 +454,8 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
           <Tabs.Trigger value="hex">Hex</Tabs.Trigger>
           <Tabs.Trigger value="rgba">RGBA</Tabs.Trigger>
           <Tabs.Trigger value="float">Float</Tabs.Trigger>
+          <Tabs.Trigger value="hsl">HSL</Tabs.Trigger>
+          <Tabs.Trigger value="lab">LAB</Tabs.Trigger>
         </Tabs.List>
 
         <Tabs.Content value="hex">
@@ -291,6 +520,50 @@ const ColorConverter = ({ onConvert }: ColorConverterProps) => {
           {rgbFloatError && (
             <Text color="red" size="2" className={styles.error}>
               {rgbFloatError}
+            </Text>
+          )}
+        </Tabs.Content>
+
+        <Tabs.Content value="hsl">
+          <form onSubmit={handleHslSubmit}>
+            <Flex direction="column" gap="3" className={styles.form}>
+              <TextField.Root type="text"
+                value={hslInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHslInput(e.target.value)}
+                placeholder={DEFAULT_HSL}
+                size="3"
+              />
+              <Button type="submit" size="3" highContrast>
+                Convert
+              </Button>
+            </Flex>
+          </form>
+          
+          {hslError && (
+            <Text color="red" size="2" className={styles.error}>
+              {hslError}
+            </Text>
+          )}
+        </Tabs.Content>
+
+        <Tabs.Content value="lab">
+          <form onSubmit={handleLabSubmit}>
+            <Flex direction="column" gap="3" className={styles.form}>
+              <TextField.Root type="text"
+                value={labInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLabInput(e.target.value)}
+                placeholder={DEFAULT_LAB}
+                size="3"
+              />
+              <Button type="submit" size="3" highContrast>
+                Convert
+              </Button>
+            </Flex>
+          </form>
+          
+          {labError && (
+            <Text color="red" size="2" className={styles.error}>
+              {labError}
             </Text>
           )}
         </Tabs.Content>

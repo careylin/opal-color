@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 interface CopyableTextProps {
   text: string;
+  displayText?: string;
   className?: string;
   size?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
   weight?: 'light' | 'regular' | 'medium' | 'bold';
@@ -14,6 +15,7 @@ interface CopyableTextProps {
 
 const CopyableText = ({ 
   text, 
+  displayText,
   className, 
   size = '7', 
   weight = 'medium',
@@ -73,7 +75,7 @@ const CopyableText = ({
         onMouseLeave={handleMouseLeave}
         data-group-id={groupId}
       >
-        {text}
+        {displayText || text}
       </Text>
       {copied && (
         <Text size="1" color="green" style={{ position: 'absolute', top: '-20px', right: '0' }}>
