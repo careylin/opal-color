@@ -5,7 +5,6 @@ import ColorOutput from './components/ColorOutput';
 import { useState, useEffect } from 'react'
 import './App.css'
 import { DEFAULT_COLOR, DEFAULT_RGBA, DEFAULT_FLOAT, DEFAULT_HSL, DEFAULT_LAB } from './config/colors';
-import { colord } from 'colord';
 
 function App() {
   const [rgbaValue, setRgbaValue] = useState<string | null>(null);

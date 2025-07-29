@@ -83,14 +83,7 @@ const ColorOutput = ({
     }
   }, [hexValue, alpha, isHex8]);
   
-  // Calculate HSL values if not provided using Colord
-  const calculatedHsl = useMemo(() => {
-    if (!hexValue) return { h: 0, s: 0, l: 100 };
-    const color = colord(hexValue);
-    if (!color.isValid()) return { h: 0, s: 0, l: 100 };
-    const hsl = color.toHsl();
-    return { h: hsl.h, s: hsl.s, l: hsl.l };
-  }, [hexValue]);
+
   
   const calculatedHslValue = useMemo(() => {
     const color = colord(hexValue);
@@ -156,7 +149,7 @@ const ColorOutput = ({
                     }}
                     disabled={!hasValues}
                   />
-                  {hexValues.alphaHex && (
+                  {hexValues.alphaHex && hexValues.hex8 && (
                     <CopyableText 
                       text={hexValues.hex8}
                       displayText={hexValues.alphaHex}
